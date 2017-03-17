@@ -5,6 +5,9 @@ services:
 addons:
   postgresql: "9.4"
 python:
+  - 2.7
+  - 3.4
+  - 3.5
   - 3.6
 install:
   - pip install -U pip setuptools zc.buildout
@@ -13,7 +16,6 @@ before_script:
   - sudo /etc/init.d/postgresql stop
   - echo "max_prepared_transactions = 1" | sudo tee -a /etc/postgresql/9.*/main/postgresql.conf
   - sudo /etc/init.d/postgresql start
-  - sudo cat /etc/postgresql/9.*/main/postgresql.conf
   - psql postgres -c "CREATE DATABASE travis;"
 script: bin/test -v1j99
 cache:
