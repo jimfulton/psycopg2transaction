@@ -13,6 +13,7 @@ before_script:
   - sudo /etc/init.d/postgresql stop
   - echo "max_prepared_transactions = 1" | sudo tee -a /etc/postgresql/9.*/main/postgresql.conf
   - sudo /etc/init.d/postgresql start
+  - psql -c "CREATE DATABASE travis;"
 script: bin/test -v1j99
 cache:
   directories:
