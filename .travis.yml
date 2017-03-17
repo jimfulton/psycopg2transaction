@@ -1,17 +1,18 @@
 language: python
-sudo: false
+sudo: true
 services:
   - postgresql
 addons:
   postgresql: "9.4"
 python:
-  - 2.7
   - 3.6
-  - 3.5
-  - 3.4
 install:
   - pip install -U pip setuptools zc.buildout
   - buildout parts=test
+before_script:
+  - sudo /etc/init.d/postgresql stop
+  - echo "max_prepared_transactions = 1" | sudo tee -a /etc/postgresql/9.*/main/postgresql.conf
+  - sudo /etc/init.d/postgresql stop
 script: bin/test -v1j99
 cache:
   directories:
