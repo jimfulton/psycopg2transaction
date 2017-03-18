@@ -22,6 +22,8 @@ setup(
     description = long_description.strip().split('\n')[1],
     packages = [name.split('.')[0], name],
     package_dir = {'': 'src'},
+    url='https://github.com/jimfulton/psycopg2transaction',
+    keywords='psycopg2 transaction postgres database'.split(),
     install_requires = install_requires,
     zip_safe = False,
     entry_points=entry_points,
