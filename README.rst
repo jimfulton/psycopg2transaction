@@ -54,17 +54,17 @@ Limited connection management is provided::
 If you pass a connection string rather than a connection to ``join``, a
 connection will be opened for you and closed when the transaction is
 committed.  If ``join`` is called multiple times with the same connection
-string, then the same connection is returned.
+string, then the same connection is used and returned.
 
 Using Postgres notify
 =====================
 
-You can't PREPARE postgres transactions in which you've used NOTIFY
-(or LISTEN or UNLISTEN).  You can cause NOTIFY to be used after a
-transaction has committed, but before a managed connection has been
-closed by passing a ``notify`` argument to join with a name of a
-notification or a sequence of string notification named.  The strings
-may be simple names, or names followed by a comma and string data, as
-would follow NOTIFY in a notify expression::
+You can't use two-phase commit in postgres transactions in which
+you've used NOTIFY (or LISTEN or UNLISTEN).  You can cause NOTIFY to
+be used after a transaction has committed, but before a managed
+connection has been closed by passing a ``notify`` argument to join
+with a name of a notification or a sequence of string notification
+named.  The strings may be simple names, or names followed by a comma
+and string data, as would follow NOTIFY in a notify expression::
 
   >>> conn = psycopg2transaction.join(dsn, notify='myjobs')
