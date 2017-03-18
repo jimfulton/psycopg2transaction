@@ -1,15 +1,20 @@
+import contextlib
 import psycopg2
 import transaction
 import uuid
 
 class DataManager:
 
-    def __init__(self, conn, trans=None, on_complete=lambda: None):
+    on_complete = ()
+    notifies = None
+
+    def __init__(self, conn, trans=None, on_complete=None):
         self.xid = uuid.uuid1().hex
         conn.tpc_begin(self.xid)
         self.conn = conn
         trans.join(self)
-        self.on_complete = on_complete
+        if on_complete is not None:
+            self.on_complete = (on_complete,)
 
     def tpc_begin(self, trans):
         pass
@@ -22,38 +27,55 @@ class DataManager:
     def tpc_finish(self, trans):
         self.conn.tpc_commit()
         self.xid = None
-        self.on_complete()
+        if self.notifies:
+            with contextlib.closing(self.conn.cursor()) as cursor:
+                cursor.execute(';\n'.join('NOTIFY ' + s for s in self.notifies))
+            self.conn.commit()
+
+        for f in self.on_complete:
+            f()
 
     def tpc_abort(self, trans):
         if self.xid:
             self.conn.tpc_rollback()
             self.xid = None
-            self.on_complete()
+            for f in self.on_complete:
+                f()
 
     abort = tpc_abort
 
     def sortKey(self):
         return self.conn.dsn
 
-def join(conn, trans=None):
+def join(conn, trans=None, notify=None):
     if trans is None:
         trans = transaction.get()
 
     if isinstance(conn, str):
         dsn = conn
         try:
-            conns = trans.data(DataManager)
+            dms = trans.data(DataManager)
         except KeyError:
-            conns = {}
-            trans.set_data(DataManager, conns)
+            dms = {}
+            trans.set_data(DataManager, dms)
 
-        if dsn in conns:
-            conn = conns[dsn]
+        if dsn in dms:
+            dm = dms[dsn]
         else:
             conn = psycopg2.connect(dsn)
-            DataManager(conn, trans, on_complete=conn.close)
-            conns[dsn] = conn
+            dm = DataManager(conn, trans, on_complete=conn.close)
+            dms[dsn] = dm
 
-        return conn
+        if notify:
+            notifies = dm.notifies
+            if not notifies:
+                notifies = dm.notifies = set()
+
+            if isinstance(notify, str):
+                notifies.add(notify)
+            else:
+                notifies.update(set(notify))
+
+        return dm.conn
     else:
         DataManager(conn, trans)

@@ -104,6 +104,25 @@ class Psycopg2TransactionTests(unittest.TestCase):
         transaction.abort()
         self.assertTrue(conn.closed)
 
+    def test_connection_notify(self):
+        import psycopg2transaction
+
+        lconn, lcursor = self.__connect()
+        lconn.autocommit = True
+        lcursor.execute("LISTEN " + self.__tname)
+
+        conn = psycopg2transaction.join('', notify=self.__tname)
+        with contextlib.closing(conn.cursor()) as cursor:
+            cursor.execute("insert into %s values (1)" % self.__tname)
+        self.assertTrue(psycopg2transaction.join('') is conn)
+        transaction.commit()
+        self.assertTrue(conn.closed)
+
+        lconn.poll()
+        self.assertEqual(1, len(lconn.notifies))
+        lcursor.close()
+        lconn.close()
+
 class BadDM:
 
     def __init__(self, bad_early=False):
