@@ -1,3 +1,4 @@
+import contextlib
 import psycopg2
 import transaction
 import unittest
@@ -90,6 +91,18 @@ class Psycopg2TransactionTests(unittest.TestCase):
         self.assertEqual([], list(cursor))
         cursor.close(); conn.close()
 
+    def test_connection_management(self):
+        import psycopg2transaction
+        conn = psycopg2transaction.join('')
+        with contextlib.closing(conn.cursor()) as cursor:
+            cursor.execute("insert into %s values (1)" % self.__tname)
+        self.assertTrue(psycopg2transaction.join('') is conn)
+        transaction.commit()
+        self.assertTrue(conn.closed)
+
+        conn = psycopg2transaction.join('')
+        transaction.abort()
+        self.assertTrue(conn.closed)
 
 class BadDM:
 

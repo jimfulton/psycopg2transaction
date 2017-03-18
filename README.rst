@@ -38,3 +38,20 @@ If you use a thread-local transaction manager (as in the example
 above), you can omit the transaction argumet to ``join``::
 
   >>> psycopg2transaction.join(conn)
+
+Connection management
+=====================
+
+Limited connection management is provided::
+
+  >>> dsn = 'dbname=test'
+  >>> conn = psycopg2transaction.join(dsn)
+  ...
+  >>> conn = psycopg2transaction.join(dsn)
+  ...
+  >>> transaction.commit()
+
+If you pass a connection string rather than a connection to ``join``, a
+connection will be opened for you and closed when the transaction is
+committed.  If ``join`` is called multiple times with the same connection
+string, then the same connection is returned.
