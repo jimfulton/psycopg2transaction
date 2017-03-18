@@ -33,7 +33,6 @@ setup(
     test_suite = name+'.tests.test_suite',
     include_package_data = True,
 
-    keywords = "",
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         'Framework :: Buildout',
