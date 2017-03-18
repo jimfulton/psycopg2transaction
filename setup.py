@@ -1,5 +1,5 @@
 name = 'psycopg2transaction'
-version = '0'
+version = '0.1.0'
 
 install_requires = ['psycopg2', 'transaction']
 extras_require = dict(test=['manuel', 'mock', 'zope.testing'])
