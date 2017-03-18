@@ -5,7 +5,7 @@ Changes
 0.1.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Package meta data.
 
 
 0.1.0 (2017-03-18)
